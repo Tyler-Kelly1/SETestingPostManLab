@@ -1,0 +1,19 @@
+$kind: http-request
+name: 5. PUT Course with maxSize = 1 (Below Roster Size Limit) -> 400
+url: "{{baseUrl}}/api/courses/{{s7_courseId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Shrinkable Course",
+      "maxSize": 1,
+      "room": "Rm 2"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('Setting maxSize below current roster (1 < 2) fails (400)', () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 5000

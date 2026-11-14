@@ -1,0 +1,67 @@
+$kind: http-request
+name: Get a student
+description: ""
+url: "{{baseUrl}}/api/students/:id"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: "1"
+    disabled: false
+    description: Id of the student.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: text
+  content: ""
+scripts:
+  - type: afterResponse
+    code: "const Ajv = require('ajv');\r
+
+      const spec = JSON.parse(pm.collectionVariables.get('contract'));\r
+
+      const ajv = new Ajv({\r
+
+      allErrors: true,\r
+
+      unknownFormats: 'ignore',\r
+
+      schemaId: 'auto',\r
+
+      validateSchema: false,\r
+
+      logger: false\r
+
+      });\r
+
+      ajv.addSchema(spec, 'spec');\r
+
+      pm.test('Body matches StudentResponse', () => {\r
+
+      const valid = ajv.validate(\r
+
+      { $ref: 'spec#/components/schemas/StudentResponse' },\r
+
+      pm.response.json()\r
+
+      );\r
+
+      pm.expect(valid, ajv.errorsText()).to.be.true;\r
+
+      });"
+    language: text/javascript
+settings: {}
+examples: .resources/Get a student-1.resources/examples
+order: 1000

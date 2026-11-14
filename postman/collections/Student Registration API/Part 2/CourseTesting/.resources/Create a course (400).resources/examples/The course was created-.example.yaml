@@ -1,0 +1,132 @@
+$kind: http-example
+name: The course was created.
+request:
+  url: "{{baseUrl}}/api/courses"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "maxSize": 30,
+        "name": "CS1",
+        "room": "MCS 339",
+        "instructor": 2,
+        "roster": [
+          1,
+          1
+        ]
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Location
+      value: string
+      disabled: false
+      description: URL of the new course.
+      $type: string
+  body:
+    type: json
+    content: |-
+      {
+        "id": 1,
+        "instructorId": 2,
+        "maxSize": 30,
+        "name": "CS1",
+        "room": "MCS 339",
+        "roster": [
+          {
+            "id": 1,
+            "name": "Sherlock Holmes"
+          },
+          {
+            "id": 1,
+            "name": "Sherlock Holmes"
+          }
+        ],
+        "status": "OPEN"
+      }
+    $type: |-
+      {
+        "description": "A course as returned by the API.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1,
+            "description": "Unique id assigned by the service.",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "example": "CS1",
+            "description": "Name of the course."
+          },
+          "instructorId": {
+            "type": "integer",
+            "example": 2,
+            "description": "Id of the instructor teaching the course.",
+            "format": "int64"
+          },
+          "maxSize": {
+            "type": "integer",
+            "example": 30,
+            "description": "Maximum number of students the course can hold.",
+            "format": "int32"
+          },
+          "room": {
+            "type": "string",
+            "example": "MCS 339",
+            "description": "Room where the course meets."
+          },
+          "roster": {
+            "type": "array",
+            "description": "The students on the roster, with one entry per student.",
+            "items": {
+              "description": "The short form of a student used in a course roster.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 1,
+                  "description": "Unique id of the student.",
+                  "format": "int64"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "Sherlock Holmes",
+                  "description": "Full name of the student."
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ]
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLOSED"
+            ],
+            "example": "OPEN",
+            "description": "Whether the course is accepting enrollments."
+          }
+        },
+        "required": [
+          "id",
+          "instructorId",
+          "maxSize",
+          "name",
+          "room",
+          "roster",
+          "status"
+        ]
+      }
+order: 4000

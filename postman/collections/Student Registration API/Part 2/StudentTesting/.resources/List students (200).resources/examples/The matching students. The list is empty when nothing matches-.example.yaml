@@ -1,0 +1,93 @@
+$kind: http-example
+name: The matching students. The list is empty when nothing matches.
+request:
+  url: "{{baseUrl}}/api/students?major=Computer Science"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    - key: major
+      value: Computer Science
+      disabled: false
+      description: Return only students with exactly this major.
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "courses": [
+            "CS1"
+          ],
+          "gpa": 3.75,
+          "id": 1,
+          "major": "Computer Science",
+          "name": "Sherlock Holmes"
+        },
+        {
+          "courses": [
+            "CS1"
+          ],
+          "gpa": 3.75,
+          "id": 1,
+          "major": "Computer Science",
+          "name": "Sherlock Holmes"
+        }
+      ]
+    $type: |-
+      {
+        "type": "array",
+        "items": {
+          "description": "A student as returned by the API.",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "example": 1,
+              "description": "Unique id assigned by the service.",
+              "format": "int64"
+            },
+            "name": {
+              "type": "string",
+              "example": "Sherlock Holmes",
+              "description": "Full name of the student."
+            },
+            "major": {
+              "type": "string",
+              "example": "Computer Science",
+              "description": "Declared major."
+            },
+            "gpa": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 4,
+              "example": 3.75,
+              "description": "Grade point average on a 4.0 scale.",
+              "format": "double"
+            },
+            "courses": {
+              "type": "array",
+              "description": "Names of the courses this student is enrolled in, with one entry per course.",
+              "items": {
+                "type": "string",
+                "example": "CS1"
+              }
+            }
+          },
+          "required": [
+            "courses",
+            "gpa",
+            "id",
+            "major",
+            "name"
+          ]
+        }
+      }
+order: 1000

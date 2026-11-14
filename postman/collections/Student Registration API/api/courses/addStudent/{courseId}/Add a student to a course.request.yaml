@@ -1,0 +1,37 @@
+$kind: http-request
+description: Adds the student to the roster. The body is the student's id as a bare JSON number. A course can never hold more than `maxSize` students.
+url: "{{baseUrl}}/api/courses/addStudent/:courseId"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: courseId
+    value: "1"
+    disabled: false
+    description: Id of the course.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: json
+  content: "1"
+  $type: |-
+    {
+      "type": "integer",
+      "example": 1,
+      "format": "int64"
+    }
+settings: {}
+examples: ./.resources/Add a student to a course.resources/examples
+order: 1000

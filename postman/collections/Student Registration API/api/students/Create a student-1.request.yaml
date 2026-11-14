@@ -1,0 +1,74 @@
+$kind: http-request
+name: Create a student
+description: Creates a student and places them on the roster of any courses
+  listed in `courses`.
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "gpa": 3.75,
+      "major": "Computer Science",
+      "name": "Sherlock Holmes",
+      "courses": [
+        1,
+        1
+      ],
+      "dateOfBirth": "2004-01-06"
+    }
+  $type: |-
+    {
+      "description": "The fields a client supplies to create or update a student.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "example": "Sherlock Holmes",
+          "description": "Full name of the student."
+        },
+        "major": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "example": "Computer Science",
+          "description": "Declared major."
+        },
+        "gpa": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4,
+          "example": 3.75,
+          "description": "Grade point average on a 4.0 scale.",
+          "format": "double"
+        },
+        "courses": {
+          "type": "array",
+          "description": "Ids of the courses to enroll this student in. The student is added to the roster of each course. On an update, the list replaces the student's current courses.",
+          "items": {
+            "type": "integer",
+            "example": 1,
+            "format": "int64"
+          }
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "example": "2004-01-06",
+          "description": "Date of birth. Protected student data: it is accepted on write and is never returned by the API.",
+          "format": "date"
+        }
+      },
+      "required": [
+        "gpa",
+        "major",
+        "name"
+      ]
+    }
+settings: {}
+examples: ./.resources/Create a student-1.resources/examples
+order: 4000

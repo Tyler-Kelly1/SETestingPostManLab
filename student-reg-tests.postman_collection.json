@@ -1,0 +1,1689 @@
+{
+  "info": {
+    "name": "Student Registration API - Part 4 Dynamic Tests",
+    "description": "Part 4 Dynamic Behavioral Tests (15 self-contained scenarios, 3 multi-step workflows, BVA on 3+ limits). Ready for Newman execution.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Dynamic Tests",
+      "item": [
+        {
+          "name": "Scenario 01 (Workflow 1 - Lifecycle): Deleting a student cascades to course rosters and enrollment count",
+          "item": [
+            {
+              "name": "1. Create Course",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Course created (201)', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('s1_courseId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"CS101-Lifecycle\",\n  \"instructor\": 10,\n  \"maxSize\": 5,\n  \"room\": \"MCS 339\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "2. Create Student enrolled in Course",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Student created (201)', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('s1_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Sherlock Holmes\",\n  \"major\": \"Computer Science\",\n  \"gpa\": 3.75,\n  \"courses\": [{{s1_courseId}}]\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. Confirm Course Roster and Enrollment = 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Enrollment count is 1', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json()).to.eql(1);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/courses/getEnrollment/{{s1_courseId}}"
+              }
+            },
+            {
+              "name": "4. Delete Student",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Delete student returns 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "url": "{{baseUrl}}/api/students/{{s1_studentId}}"
+              }
+            },
+            {
+              "name": "5. Confirm Student Removed from Course Roster",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const studentId = Number(pm.collectionVariables.get('s1_studentId'));",
+                      "pm.test('Course roster no longer lists deleted student', () => {",
+                      "  const rosterIds = pm.response.json().roster.map(s => s.id);",
+                      "  pm.expect(rosterIds).to.not.include(studentId);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/courses/{{s1_courseId}}"
+              }
+            },
+            {
+              "name": "6. Confirm Enrollment Count Dropped to 0",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Enrollment count is 0 after student deletion', () => {",
+                      "  pm.expect(pm.response.json()).to.eql(0);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/courses/getEnrollment/{{s1_courseId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 02 (Workflow 2 - Cross-Endpoint Consistency): Add and remove student reflects across all views",
+          "item": [
+            {
+              "name": "1. Create Course",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s2_courseId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"CS202-Consistency\",\n  \"instructor\": 11,\n  \"maxSize\": 10,\n  \"room\": \"MCS 210\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "2. Create Unenrolled Student",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s2_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ada Lovelace\",\n  \"major\": \"Mathematics\",\n  \"gpa\": 4.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. Enroll via PUT /api/courses/addStudent/{courseId}",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const studentId = Number(pm.collectionVariables.get('s2_studentId'));",
+                      "pm.test('addStudent returns 200 with student on roster', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().roster.map(s => s.id)).to.include(studentId);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{{s2_studentId}}"
+                },
+                "url": "{{baseUrl}}/api/courses/addStudent/{{s2_courseId}}"
+              }
+            },
+            {
+              "name": "4. Verify Student GET shows Course Name",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Student courses list includes CS202-Consistency', () => {",
+                      "  pm.expect(pm.response.json().courses).to.include('CS202-Consistency');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/students/{{s2_studentId}}"
+              }
+            },
+            {
+              "name": "5. Verify GET /api/students/{id}/courses includes full course details",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const courseId = Number(pm.collectionVariables.get('s2_courseId'));",
+                      "pm.test('Student courses endpoint returns course object', () => {",
+                      "  pm.expect(pm.response.json().map(c => c.id)).to.include(courseId);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/students/{{s2_studentId}}/courses"
+              }
+            },
+            {
+              "name": "6. Remove Student via PUT /api/courses/removeStudent/{courseId}",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const studentId = Number(pm.collectionVariables.get('s2_studentId'));",
+                      "pm.test('removeStudent returns 200 and removes student', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().roster.map(s => s.id)).to.not.include(studentId);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentId\": {{s2_studentId}}\n}"
+                },
+                "url": "{{baseUrl}}/api/courses/removeStudent/{{s2_courseId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 03 (Workflow 3 - Alternate Write Paths): Updating enrollments from Student vs Course PUT",
+          "item": [
+            {
+              "name": "1. Create Course A",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s3_courseA', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Course-A-AltPath\",\n  \"maxSize\": 10,\n  \"room\": \"101\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "2. Create Course B",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s3_courseB', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Course-B-AltPath\",\n  \"maxSize\": 10,\n  \"room\": \"102\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "3. Create Student Enrolled in Course A",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s3_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Grace Hopper\",\n  \"major\": \"Computer Science\",\n  \"gpa\": 3.9,\n  \"courses\": [{{s3_courseA}}]\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "4. PUT Student to switch enrollment from Course A to Course B",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Student updated to Course B', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().courses).to.eql(['Course-B-AltPath']);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Grace Hopper\",\n  \"major\": \"Computer Science\",\n  \"gpa\": 3.9,\n  \"courses\": [{{s3_courseB}}]\n}"
+                },
+                "url": "{{baseUrl}}/api/students/{{s3_studentId}}"
+              }
+            },
+            {
+              "name": "5. Verify Course A Roster is now empty",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const studentId = Number(pm.collectionVariables.get('s3_studentId'));",
+                      "pm.test('Course A no longer has student on roster', () => {",
+                      "  pm.expect(pm.response.json().roster.map(s => s.id)).to.not.include(studentId);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/courses/{{s3_courseA}}"
+              }
+            },
+            {
+              "name": "6. Verify Course B Roster now contains student",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const studentId = Number(pm.collectionVariables.get('s3_studentId'));",
+                      "pm.test('Course B has student on roster', () => {",
+                      "  pm.expect(pm.response.json().roster.map(s => s.id)).to.include(studentId);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/courses/{{s3_courseB}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 04 (BVA Limit 1 - GPA): Lower and upper bounds (0.0, 4.0, -0.01, 4.01)",
+          "item": [
+            {
+              "name": "1. GPA on minimum boundary (0.0) -> 201",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('GPA 0.0 accepted (201)', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Min GPA Student\",\n  \"major\": \"Physics\",\n  \"gpa\": 0.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "2. GPA just below minimum (-0.01) -> 400",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('GPA -0.01 rejected (400)', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Below Min GPA\",\n  \"major\": \"Physics\",\n  \"gpa\": -0.01\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. GPA on maximum boundary (4.0) -> 201",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('GPA 4.0 accepted (201)', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Max GPA Student\",\n  \"major\": \"Physics\",\n  \"gpa\": 4.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "4. GPA just above maximum (4.01) -> 400",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('GPA 4.01 rejected (400)', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Above Max GPA\",\n  \"major\": \"Physics\",\n  \"gpa\": 4.01\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 05 (BVA Limit 2 - Course Capacity & Status Transition): Enrolling up to and beyond maxSize",
+          "item": [
+            {
+              "name": "1. Create Course with maxSize = 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s5_courseId', pm.response.json().id);",
+                      "pm.test('New course is OPEN', () => pm.expect(pm.response.json().status).to.eql('OPEN'));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Cap-2-Course\",\n  \"maxSize\": 2,\n  \"room\": \"Rm 1\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "2. Create Student 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s5_stu1', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Cap Student 1\",\n  \"major\": \"CS\",\n  \"gpa\": 3.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. Create Student 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s5_stu2', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Cap Student 2\",\n  \"major\": \"CS\",\n  \"gpa\": 3.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "4. Create Student 3",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s5_stu3', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Cap Student 3\",\n  \"major\": \"CS\",\n  \"gpa\": 3.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "5. Add Student 1 (Just Inside Limit: 1/2) -> 200 OPEN",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('1st student added (200)', () => pm.response.to.have.status(200));",
+                      "pm.test('Course remains OPEN at 1/2', () => pm.expect(pm.response.json().status).to.eql('OPEN'));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{{s5_stu1}}"
+                },
+                "url": "{{baseUrl}}/api/courses/addStudent/{{s5_courseId}}"
+              }
+            },
+            {
+              "name": "6. Add Student 2 (On Limit: 2/2) -> 200 CLOSED",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('2nd student added at capacity (200)', () => pm.response.to.have.status(200));",
+                      "pm.test('Course transitions to CLOSED at 2/2', () => pm.expect(pm.response.json().status).to.eql('CLOSED'));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{{s5_stu2}}"
+                },
+                "url": "{{baseUrl}}/api/courses/addStudent/{{s5_courseId}}"
+              }
+            },
+            {
+              "name": "7. Add Student 3 (Just Outside Limit: 3/2) -> 409 Conflict",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Adding student past maxSize returns 409', () => pm.response.to.have.status(409));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{{s5_stu3}}"
+                },
+                "url": "{{baseUrl}}/api/courses/addStudent/{{s5_courseId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 06 (BVA Limit 3 - Student Name Length): 0, 1, 100, and 101 characters",
+          "item": [
+            {
+              "name": "1. Name length = 0 (Outside minLength 1) -> 400",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Empty name rejected (400)', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"\",\n  \"major\": \"CS\",\n  \"gpa\": 3.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "2. Name length = 1 (On minLength 1) -> 201",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('1-char name accepted (201)', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"A\",\n  \"major\": \"CS\",\n  \"gpa\": 3.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. Name length = 100 (On maxLength 100) -> 201",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('name_100', 'A'.repeat(100));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('100-char name accepted (201)', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"{{name_100}}\",\n  \"major\": \"CS\",\n  \"gpa\": 3.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "4. Name length = 101 (Outside maxLength 100) -> 400",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('name_101', 'A'.repeat(101));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('101-char name rejected (400)', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"{{name_101}}\",\n  \"major\": \"CS\",\n  \"gpa\": 3.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 07 (BVA on Course Update): Reducing maxSize below current roster size",
+          "item": [
+            {
+              "name": "1. Create Student 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s7_stu1', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Roster Student 1\",\n  \"major\": \"CS\",\n  \"gpa\": 3.2\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "2. Create Student 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s7_stu2', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Roster Student 2\",\n  \"major\": \"CS\",\n  \"gpa\": 3.4\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. Create Course with 2 Students (maxSize 5)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s7_courseId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Shrinkable Course\",\n  \"maxSize\": 5,\n  \"room\": \"Rm 2\",\n  \"roster\": [{{s7_stu1}}, {{s7_stu2}}]\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "4. PUT Course with maxSize = 2 (On Roster Size Limit) -> 200",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Setting maxSize equal to current roster (2) succeeds (200)', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Shrinkable Course\",\n  \"maxSize\": 2,\n  \"room\": \"Rm 2\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses/{{s7_courseId}}"
+              }
+            },
+            {
+              "name": "5. PUT Course with maxSize = 1 (Below Roster Size Limit) -> 400",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Setting maxSize below current roster (1 < 2) fails (400)', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Shrinkable Course\",\n  \"maxSize\": 1,\n  \"room\": \"Rm 2\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses/{{s7_courseId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 08 (State Transition - Duplicate Enrollment): Enrolling an already enrolled student returns 409",
+          "item": [
+            {
+              "name": "1. Create Course",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s8_courseId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Dup-Enroll-Course\",\n  \"maxSize\": 10,\n  \"room\": \"Rm 8\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "2. Create Student",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s8_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Repeat Enrollee\",\n  \"major\": \"CS\",\n  \"gpa\": 3.1\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. First addStudent -> 200",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('First enrollment succeeds (200)', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{{s8_studentId}}"
+                },
+                "url": "{{baseUrl}}/api/courses/addStudent/{{s8_courseId}}"
+              }
+            },
+            {
+              "name": "4. Second addStudent -> 409 Conflict",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Duplicate enrollment rejected (409)', () => pm.response.to.have.status(409));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{{s8_studentId}}"
+                },
+                "url": "{{baseUrl}}/api/courses/addStudent/{{s8_courseId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 09 (State Transition - Invalid Removal): Removing a non-enrolled student returns 409",
+          "item": [
+            {
+              "name": "1. Create Course",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s9_courseId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Empty-Roster-Course\",\n  \"maxSize\": 10,\n  \"room\": \"Rm 9\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "2. Create Unenrolled Student",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s9_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Never Enrolled\",\n  \"major\": \"CS\",\n  \"gpa\": 3.0\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. Remove Student not on roster -> 409 Conflict",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Removing non-enrolled student returns 409', () => pm.response.to.have.status(409));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentId\": {{s9_studentId}}\n}"
+                },
+                "url": "{{baseUrl}}/api/courses/removeStudent/{{s9_courseId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 10 (Negative Testing - Referential Integrity): Creating course with nonexistent student ID returns 404",
+          "item": [
+            {
+              "name": "1. POST Course with nonexistent student ID 999999 -> 404",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Unknown student ID in initial roster returns 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ghost Roster Course\",\n  \"maxSize\": 10,\n  \"room\": \"Rm 10\",\n  \"roster\": [999999]\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 11 (Negative Testing - Validation): Missing required fields on Student creation returns 400",
+          "item": [
+            {
+              "name": "1. POST Student missing major and gpa -> 400",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Missing required fields returns 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Incomplete Student\"\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 12 (Data Variation - WriteOnly Protection): dateOfBirth accepted on write and omitted on read",
+          "item": [
+            {
+              "name": "1. Create Student with dateOfBirth",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Created (201) and dateOfBirth is not in POST response', () => {",
+                      "  pm.response.to.have.status(201);",
+                      "  pm.expect(pm.response.json()).to.not.have.property('dateOfBirth');",
+                      "});",
+                      "pm.collectionVariables.set('s12_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Protected DOB Student\",\n  \"major\": \"Cybersecurity\",\n  \"gpa\": 3.8,\n  \"dateOfBirth\": \"2004-01-06\"\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "2. GET Student confirms dateOfBirth is never returned",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('dateOfBirth is not exposed on GET /api/students/{id}', () => {",
+                      "  pm.expect(pm.response.json()).to.not.have.property('dateOfBirth');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/students/{{s12_studentId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 13 (Data Variation - Optional Omission): Updating a course without 'roster' preserves existing roster",
+          "item": [
+            {
+              "name": "1. Create Student",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s13_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Preserved Student\",\n  \"major\": \"CS\",\n  \"gpa\": 3.5\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "2. Create Course with Student on Roster",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s13_courseId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Preserve-Roster-Course\",\n  \"maxSize\": 10,\n  \"room\": \"Rm 100\",\n  \"roster\": [{{s13_studentId}}]\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "3. PUT Course omitting 'roster' field",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const studentId = Number(pm.collectionVariables.get('s13_studentId'));",
+                      "pm.test('Roster is preserved when omitted from PUT body', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().room).to.eql('Rm 200');",
+                      "  pm.expect(pm.response.json().roster.map(s => s.id)).to.include(studentId);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Preserve-Roster-Course\",\n  \"maxSize\": 10,\n  \"room\": \"Rm 200\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses/{{s13_courseId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 14 (Data Variation - Query Filtering): Filtering GET /api/students by major",
+          "item": [
+            {
+              "name": "1. Create Student with Unique Major",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s14_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Astro Student\",\n  \"major\": \"Astrophysics-Unique\",\n  \"gpa\": 3.9\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "2. Create Student with Different Major",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"History Student\",\n  \"major\": \"History-Unique\",\n  \"gpa\": 3.4\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. GET /api/students?major=Astrophysics-Unique",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const list = pm.response.json();",
+                      "pm.test('Returns non-empty list where every student has matching major', () => {",
+                      "  pm.expect(list.length).to.be.greaterThan(0);",
+                      "  list.forEach(s => pm.expect(s.major).to.eql('Astrophysics-Unique'));",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/students?major=Astrophysics-Unique"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 15 (Lifecycle - Course Deletion): Deleting a course does not delete enrolled students",
+          "item": [
+            {
+              "name": "1. Create Course",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s15_courseId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Temp-Course-15\",\n  \"maxSize\": 10,\n  \"room\": \"Rm 15\"\n}"
+                },
+                "url": "{{baseUrl}}/api/courses"
+              }
+            },
+            {
+              "name": "2. Create Student Enrolled in Course",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s15_studentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Surviving Student\",\n  \"major\": \"CS\",\n  \"gpa\": 3.6,\n  \"courses\": [{{s15_courseId}}]\n}"
+                },
+                "url": "{{baseUrl}}/api/students"
+              }
+            },
+            {
+              "name": "3. DELETE Course",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Course deleted (204)', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "url": "{{baseUrl}}/api/courses/{{s15_courseId}}"
+              }
+            },
+            {
+              "name": "4. Verify Student Still Exists and Course Removed from Student Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Student still exists (200)', () => pm.response.to.have.status(200));",
+                      "pm.test('Deleted course is no longer listed on student', () => {",
+                      "  pm.expect(pm.response.json().courses).to.not.include('Temp-Course-15');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/students/{{s15_studentId}}"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

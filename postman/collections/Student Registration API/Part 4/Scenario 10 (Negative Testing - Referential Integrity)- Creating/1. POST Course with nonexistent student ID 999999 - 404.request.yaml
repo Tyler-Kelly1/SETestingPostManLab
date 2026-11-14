@@ -1,0 +1,20 @@
+$kind: http-request
+name: 1. POST Course with nonexistent student ID 999999 -> 404
+url: "{{baseUrl}}/api/courses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Ghost Roster Course",
+      "maxSize": 10,
+      "room": "Rm 10",
+      "roster": [999999]
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('Unknown student ID in initial roster returns 404', () => pm.response.to.have.status(404));
+    language: text/javascript
+order: 1000

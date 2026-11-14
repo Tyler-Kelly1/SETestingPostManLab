@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 12 (Data Variation - WriteOnly Protection): dateOfBirth accepted on write and omitted on read"
+order: 12000

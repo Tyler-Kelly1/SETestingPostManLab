@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Grace Hopper",
+      "major": "Computer Science",
+      "gpa": 3.9,
+      "courses": [{{s3_courseA}}]
+    }
+scripts:
+  - type: afterResponse
+    code: pm.collectionVariables.set('s3_studentId', pm.response.json().id);
+    language: text/javascript
+order: 3000

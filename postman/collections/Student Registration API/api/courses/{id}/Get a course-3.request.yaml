@@ -1,0 +1,31 @@
+$kind: http-request
+name: Get a course
+description: ""
+url: "{{baseUrl}}/api/courses/:id"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: "1"
+    disabled: false
+    description: Id of the course.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: text
+  content: ""
+settings: {}
+examples: ./.resources/Get a course-3.resources/examples
+order: 1000

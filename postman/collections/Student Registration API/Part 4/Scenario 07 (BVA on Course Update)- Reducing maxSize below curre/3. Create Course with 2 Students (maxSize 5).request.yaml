@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Shrinkable Course",
+      "maxSize": 5,
+      "room": "Rm 2",
+      "roster": [{{s7_stu1}}, {{s7_stu2}}]
+    }
+scripts:
+  - type: afterResponse
+    code: pm.collectionVariables.set('s7_courseId', pm.response.json().id);
+    language: text/javascript
+order: 3000

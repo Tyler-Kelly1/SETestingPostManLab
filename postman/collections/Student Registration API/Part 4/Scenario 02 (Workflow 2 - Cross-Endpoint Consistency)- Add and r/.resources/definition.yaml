@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 02 (Workflow 2 - Cross-Endpoint Consistency): Add and remove student reflects across all views"
+order: 2000

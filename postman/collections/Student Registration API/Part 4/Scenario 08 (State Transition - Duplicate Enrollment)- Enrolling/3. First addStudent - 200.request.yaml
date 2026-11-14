@@ -1,0 +1,14 @@
+$kind: http-request
+name: 3. First addStudent -> 200
+url: "{{baseUrl}}/api/courses/addStudent/{{s8_courseId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{{s8_studentId}}"
+scripts:
+  - type: afterResponse
+    code: pm.test('First enrollment succeeds (200)', () => pm.response.to.have.status(200));
+    language: text/javascript
+order: 3000

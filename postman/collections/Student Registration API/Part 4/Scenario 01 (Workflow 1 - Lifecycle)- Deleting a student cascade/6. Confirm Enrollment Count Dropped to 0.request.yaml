@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses/getEnrollment/{{s1_courseId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Enrollment count is 0 after student deletion', () => {
+        pm.expect(pm.response.json()).to.eql(0);
+      });
+    language: text/javascript
+order: 6000

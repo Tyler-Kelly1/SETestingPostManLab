@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "CS101-Lifecycle",
+      "instructor": 10,
+      "maxSize": 5,
+      "room": "MCS 339"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Course created (201)', () => pm.response.to.have.status(201));
+      pm.collectionVariables.set('s1_courseId', pm.response.json().id);
+    language: text/javascript
+order: 1000

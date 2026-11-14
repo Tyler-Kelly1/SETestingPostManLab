@@ -1,0 +1,19 @@
+$kind: http-request
+name: 4. GPA just above maximum (4.01) -> 400
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Above Max GPA",
+      "major": "Physics",
+      "gpa": 4.01
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('GPA 4.01 rejected (400)', () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 4000

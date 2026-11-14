@@ -1,0 +1,19 @@
+$kind: http-request
+name: 3. GPA on maximum boundary (4.0) -> 201
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Max GPA Student",
+      "major": "Physics",
+      "gpa": 4.0
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('GPA 4.0 accepted (201)', () => pm.response.to.have.status(201));
+    language: text/javascript
+order: 3000

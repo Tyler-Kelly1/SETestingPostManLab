@@ -1,0 +1,46 @@
+$kind: http-request
+description: Deletes the course. The students on its roster are not deleted.
+url: "{{baseUrl}}/api/courses/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: "1"
+    disabled: false
+    description: Id of the course.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: text
+  content: ""
+scripts:
+  - type: afterResponse
+    code: "pm.test('Status code is 204', () => {\r
+
+      \    pm.response.to.have.status(204);\r
+
+      });\r
+
+      \r
+
+      pm.test('Response body is completely empty', () => {\r
+
+      \    pm.expect(pm.response.text()).to.be.empty;\r
+
+      });"
+    language: text/javascript
+settings: {}
+examples: .resources/Delete a course (204).resources/examples
+order: 10000

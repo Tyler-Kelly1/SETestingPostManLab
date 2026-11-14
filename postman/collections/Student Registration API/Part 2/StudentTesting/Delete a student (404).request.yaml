@@ -1,0 +1,45 @@
+$kind: http-request
+description: Deletes the student and removes them from the roster of every course they are enrolled in.
+url: "{{baseUrl}}/api/students/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: "-99"
+    description: Id of the student.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: text
+  content: ""
+scripts:
+  - type: afterResponse
+    code: "pm.test('Status code is 404', () => {\r
+
+      \    pm.response.to.have.status(404);\r
+
+      });\r
+
+      \r
+
+      pm.test('Response body is completely empty', () => {\r
+
+      \    pm.expect(pm.response.text()).to.be.empty;\r
+
+      });"
+    language: text/javascript
+settings: {}
+examples: .resources/Delete a student (404).resources/examples
+order: 5000

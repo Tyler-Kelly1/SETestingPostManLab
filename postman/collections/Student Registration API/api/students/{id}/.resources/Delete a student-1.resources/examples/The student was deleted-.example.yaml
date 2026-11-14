@@ -1,0 +1,20 @@
+$kind: http-example
+name: The student was deleted.
+request:
+  url: "{{baseUrl}}/api/students/:id"
+  method: DELETE
+  pathVariables:
+    - key: id
+      value: "1"
+      disabled: false
+      description: Id of the student.
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 204
+  statusText: No Content
+  body:
+    type: text
+    content: ""
+order: 1000

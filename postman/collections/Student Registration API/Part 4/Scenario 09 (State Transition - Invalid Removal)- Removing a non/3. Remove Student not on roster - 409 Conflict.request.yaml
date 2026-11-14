@@ -1,0 +1,17 @@
+$kind: http-request
+name: 3. Remove Student not on roster -> 409 Conflict
+url: "{{baseUrl}}/api/courses/removeStudent/{{s9_courseId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "studentId": {{s9_studentId}}
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('Removing non-enrolled student returns 409', () => pm.response.to.have.status(409));
+    language: text/javascript
+order: 3000

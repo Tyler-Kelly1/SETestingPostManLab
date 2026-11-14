@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "History Student",
+      "major": "History-Unique",
+      "gpa": 3.4
+    }
+order: 2000

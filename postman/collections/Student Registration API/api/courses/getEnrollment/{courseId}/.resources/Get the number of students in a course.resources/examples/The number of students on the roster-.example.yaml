@@ -1,0 +1,30 @@
+$kind: http-example
+name: The number of students on the roster.
+request:
+  url: "{{baseUrl}}/api/courses/getEnrollment/:courseId"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: courseId
+      value: "1"
+      disabled: false
+      description: Id of the course.
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: "12"
+    $type: |-
+      {
+        "type": "integer",
+        "example": 12,
+        "format": "int64"
+      }
+order: 1000

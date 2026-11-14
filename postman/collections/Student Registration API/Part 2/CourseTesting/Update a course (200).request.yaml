@@ -1,0 +1,126 @@
+$kind: http-request
+description: Replaces the course's details and, when `roster` is supplied, its roster.
+url: "{{baseUrl}}/api/courses/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: "1"
+    disabled: false
+    description: Id of the course.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: json
+  content: |-
+    {
+      "maxSize": 30,
+      "name": "CS3",
+      "room": "MCS 339",
+      "instructor": 2,
+      "roster": [
+        1,
+        1
+      ]
+    }
+  $type: |-
+    {
+      "description": "The fields a client supplies to create or update a course.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "example": "CS1",
+          "description": "Name of the course."
+        },
+        "instructor": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 2,
+          "description": "Id of the instructor teaching the course.",
+          "format": "int64"
+        },
+        "maxSize": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 30,
+          "description": "Maximum number of students the course can hold. It cannot be set below the number of students already on the roster.",
+          "format": "int32"
+        },
+        "room": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "example": "MCS 339",
+          "description": "Room where the course meets."
+        },
+        "roster": {
+          "type": "array",
+          "description": "Ids of the students to place on the roster. When omitted from an update, the roster is left unchanged. Every id must belong to an existing student.",
+          "items": {
+            "type": "integer",
+            "example": 1,
+            "format": "int64"
+          }
+        }
+      },
+      "required": [
+        "maxSize",
+        "name",
+        "room"
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: "const Ajv = require('ajv');\r
+
+      const spec = JSON.parse(pm.collectionVariables.get('contract'));\r
+
+      const ajv = new Ajv({\r
+
+      allErrors: true,\r
+
+      unknownFormats: 'ignore',\r
+
+      schemaId: 'auto',\r
+
+      validateSchema: false,\r
+
+      logger: false\r
+
+      });\r
+
+      ajv.addSchema(spec, 'spec');\r
+
+      pm.test('Body matches CourseResponse', () => {\r
+
+      const valid = ajv.validate(\r
+
+      { $ref: 'spec#/components/schemas/CourseResponse' },\r
+
+      pm.response.json()\r
+
+      );\r
+
+      pm.expect(valid, ajv.errorsText()).to.be.true;\r
+
+      });"
+    language: text/javascript
+settings: {}
+examples: .resources/Update a course (200).resources/examples
+order: 6000

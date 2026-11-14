@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses/{{s13_courseId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Preserve-Roster-Course",
+      "maxSize": 10,
+      "room": "Rm 200"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const studentId = Number(pm.collectionVariables.get('s13_studentId'));
+      pm.test('Roster is preserved when omitted from PUT body', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().room).to.eql('Rm 200');
+        pm.expect(pm.response.json().roster.map(s => s.id)).to.include(studentId);
+      });
+    language: text/javascript
+order: 3000

@@ -1,0 +1,21 @@
+$kind: collection
+description: |-
+  Manages students, courses, and course rosters.
+
+  All error responses use the `ErrorResponse` schema unless an operation says otherwise.
+  Data is stored in memory and is cleared each time the service restarts.
+variables:
+  baseUrl: http://localhost:8080
+  contract: ""
+  studentId: ""
+  baselineContract: ""
+  wf1_courseId: ""
+  wf1_studentId: ""
+  bva_courseId: ""
+  s1_courseId: ""
+  s1_studentId: ""
+  s2_courseId: ""
+  s2_studentId: ""
+  s3_courseA: ""
+  s3_courseB: ""
+  s3_studentId: ""

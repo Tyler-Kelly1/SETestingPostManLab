@@ -1,0 +1,104 @@
+$kind: http-request
+url: "{{baseUrl}}/v3/api-docs"
+method: GET
+scripts:
+  - type: afterResponse
+    code: "const live = pm.response.json();\r
+
+      const baseline =
+      JSON.parse(pm.collectionVariables.get('baselineContract'));\r
+
+      \r
+
+      const summarize = (spec) => {\r
+
+      \    const summary = {};\r
+
+      \    \r
+
+      \    // 1. Summarize Paths and Operations (Unchanged)\r
+
+      \    for (const [path, operations] of Object.entries(spec.paths)) {\r
+
+      \        for (const [method, op] of Object.entries(operations)) {\r
+
+      \            summary[method.toUpperCase() + ' ' + path] = {\r
+
+      \                responses: Object.keys(op.responses).sort(),\r
+
+      \                parameters: (op.parameters || []).map(p => p.in + ':' +
+      p.name).sort()\r
+
+      \            };\r
+
+      \        }\r
+
+      \    }\r
+
+      \    \r
+
+      \    // 2. Summarize Schemas (Extended for types and enums)\r
+
+      \    for (const [name, schema] of Object.entries(spec.components.schemas))
+      {\r
+
+      \        const props = schema.properties || {};\r
+
+      \        \r
+
+      \        // Create an array that squashes the name, type, and enum values
+      into a single string for easy comparison\r
+
+      \        const propDetails = Object.keys(props).sort().map(k => {\r
+
+      \            const type = props[k].type || 'ref';\r
+
+      \            const enumValues = props[k].enum ?
+      props[k].enum.sort().join('|') : 'none';\r
+
+      \            return `${k}:${type}:${enumValues}`;\r
+
+      \        });\r
+
+      \r
+
+      \        summary['schema ' + name] = {\r
+
+      \            properties: Object.keys(props).sort(),\r
+
+      \            required: (schema.required || []).slice().sort(),\r
+
+      \            propertyDetails: propDetails // This new array catches type
+      and enum drift\r
+
+      \        };\r
+
+      \    }\r
+
+      \    return summary;\r
+
+      };\r
+
+      \r
+
+      \r
+
+      const before = summarize(baseline);\r
+
+      const after = summarize(live);\r
+
+      const allKeys = [...new\r
+
+      Set([...Object.keys(before), ...Object.keys(after)])];\r
+
+      const changed = allKeys.filter(k => JSON.stringify(before[k]) !==\r
+
+      JSON.stringify(after[k]));\r
+
+      pm.test('Live contract matches the baseline', () => {\r
+
+      pm.expect(changed, 'Changed: ' + changed.join(', ')).to.be.empty;\r
+
+      });"
+    language: text/javascript
+order: 1000

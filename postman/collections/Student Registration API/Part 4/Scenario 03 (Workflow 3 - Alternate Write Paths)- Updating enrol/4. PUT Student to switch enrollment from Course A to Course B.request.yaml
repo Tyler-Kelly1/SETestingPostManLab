@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/api/students/{{s3_studentId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Grace Hopper",
+      "major": "Computer Science",
+      "gpa": 3.9,
+      "courses": [{{s3_courseB}}]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Student updated to Course B', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().courses).to.eql(['Course-B-AltPath']);
+      });
+    language: text/javascript
+order: 4000

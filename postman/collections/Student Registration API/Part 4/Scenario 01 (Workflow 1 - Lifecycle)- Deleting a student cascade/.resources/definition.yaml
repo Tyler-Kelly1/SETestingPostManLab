@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 01 (Workflow 1 - Lifecycle): Deleting a student cascades to course rosters and enrollment count"
+order: 1000

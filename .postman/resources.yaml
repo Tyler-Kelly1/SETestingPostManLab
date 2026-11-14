@@ -1,0 +1,16 @@
+workspace:
+  id: 3ee3d283-9ed9-4004-8f2e-05f33aeed6a8
+localResources:
+  specs:
+    - ../contract/openapi.json
+    - ../contract/openapi.yaml
+    - ../postman/specs/Student Registration API/index.json
+    - ../postman/specs/Student Registration API-1/index.json
+    - ../postman/specs/test/test.json
+resourceNameMappings:
+  specs:
+    - ../postman/specs/Student Registration API/index.json: Student Registration API
+    - ../postman/specs/Student Registration API-1/index.json: Student Registration API
+    - ../postman/specs/test/test.json: test
+cloudResources:
+  collections: {}

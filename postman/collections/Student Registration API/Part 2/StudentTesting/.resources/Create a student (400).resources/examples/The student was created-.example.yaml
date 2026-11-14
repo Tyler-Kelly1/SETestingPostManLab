@@ -1,0 +1,90 @@
+$kind: http-example
+name: The student was created.
+request:
+  url: "{{baseUrl}}/api/students"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "name": "James",
+        "major": "Computer Science",
+        "gpa": 3.75,
+        "courses": [
+          1
+        ],
+        "dateOfBirth": "2004-01-06"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Location
+      value: string
+      disabled: false
+      description: URL of the new student.
+      $type: string
+  body:
+    type: json
+    content: |-
+      {
+        "courses": [
+          "CS1"
+        ],
+        "gpa": 3.75,
+        "id": 1,
+        "major": "Computer Science",
+        "name": "Sherlock Holmes"
+      }
+    $type: |-
+      {
+        "description": "A student as returned by the API.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1,
+            "description": "Unique id assigned by the service.",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "example": "Sherlock Holmes",
+            "description": "Full name of the student."
+          },
+          "major": {
+            "type": "string",
+            "example": "Computer Science",
+            "description": "Declared major."
+          },
+          "gpa": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 4,
+            "example": 3.75,
+            "description": "Grade point average on a 4.0 scale.",
+            "format": "double"
+          },
+          "courses": {
+            "type": "array",
+            "description": "Names of the courses this student is enrolled in, with one entry per course.",
+            "items": {
+              "type": "string",
+              "example": "CS1"
+            }
+          }
+        },
+        "required": [
+          "courses",
+          "gpa",
+          "id",
+          "major",
+          "name"
+        ]
+      }
+order: 1000

@@ -1,0 +1,19 @@
+$kind: http-request
+name: 1. Name length = 0 (Outside minLength 1) -> 400
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "",
+      "major": "CS",
+      "gpa": 3.0
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('Empty name rejected (400)', () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 1000

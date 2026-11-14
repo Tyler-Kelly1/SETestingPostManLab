@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 09 (State Transition - Invalid Removal): Removing a non-enrolled student returns 409"
+order: 9000

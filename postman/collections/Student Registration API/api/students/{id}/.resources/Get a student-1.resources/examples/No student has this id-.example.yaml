@@ -1,0 +1,72 @@
+$kind: http-example
+name: No student has this id.
+request:
+  url: "{{baseUrl}}/api/students/:id"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: "1"
+      disabled: false
+      description: Id of the student.
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "error": "Not Found",
+        "message": "No such student exists.",
+        "path": "/api/students/99",
+        "status": 404,
+        "timestamp": "2026-11-06T14:30:00Z"
+      }
+    $type: |-
+      {
+        "description": "The standard body of an error response.",
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "example": "2026-11-06T14:30:00Z",
+            "description": "When the error occurred.",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "integer",
+            "example": 404,
+            "description": "HTTP status code.",
+            "format": "int32"
+          },
+          "error": {
+            "type": "string",
+            "example": "Not Found",
+            "description": "HTTP status phrase."
+          },
+          "message": {
+            "type": "string",
+            "example": "No such student exists.",
+            "description": "What went wrong."
+          },
+          "path": {
+            "type": "string",
+            "example": "/api/students/99",
+            "description": "The path that was requested."
+          }
+        },
+        "required": [
+          "error",
+          "message",
+          "path",
+          "status",
+          "timestamp"
+        ]
+      }
+order: 2000

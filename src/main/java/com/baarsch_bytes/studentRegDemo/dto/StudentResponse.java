@@ -21,7 +21,8 @@ public class StudentResponse {
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String major;
 
-    @Schema(description = "Grade point average on a 4.0 scale.", example = "3.75",
+    @Schema(description = "Grade point a" +
+            "verage on a 4.0 scale.", example = "3.75",
             requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0.0", maximum = "4.0")
     private Double gpa;
 

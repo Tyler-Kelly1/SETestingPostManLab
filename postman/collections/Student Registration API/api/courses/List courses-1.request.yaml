@@ -1,0 +1,13 @@
+$kind: http-request
+name: List courses
+description: Returns every course, optionally limited to a single instructor.
+url: "{{baseUrl}}/api/courses"
+method: GET
+headers:
+  Accept: application/json
+body:
+  type: text
+  content: ""
+settings: {}
+examples: ./.resources/List courses-1.resources/examples
+order: 4944

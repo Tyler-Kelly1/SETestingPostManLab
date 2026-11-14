@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 03 (Workflow 3 - Alternate Write Paths): Updating enrollments from Student vs Course PUT"
+order: 3000

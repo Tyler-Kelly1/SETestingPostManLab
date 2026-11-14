@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 10 (Negative Testing - Referential Integrity): Creating course with nonexistent student ID returns 404"
+order: 10000

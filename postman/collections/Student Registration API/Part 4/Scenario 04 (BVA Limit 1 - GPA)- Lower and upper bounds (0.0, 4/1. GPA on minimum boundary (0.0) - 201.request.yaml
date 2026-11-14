@@ -1,0 +1,19 @@
+$kind: http-request
+name: 1. GPA on minimum boundary (0.0) -> 201
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Min GPA Student",
+      "major": "Physics",
+      "gpa": 0.0
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('GPA 0.0 accepted (201)', () => pm.response.to.have.status(201));
+    language: text/javascript
+order: 1000

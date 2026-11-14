@@ -1,0 +1,19 @@
+$kind: http-request
+name: 3. Enroll via PUT /api/courses/addStudent/{courseId}
+url: "{{baseUrl}}/api/courses/addStudent/{{s2_courseId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{{s2_studentId}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      const studentId = Number(pm.collectionVariables.get('s2_studentId'));
+      pm.test('addStudent returns 200 with student on roster', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().roster.map(s => s.id)).to.include(studentId);
+      });
+    language: text/javascript
+order: 3000

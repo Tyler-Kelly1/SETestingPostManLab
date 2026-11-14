@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "CS202-Consistency",
+      "instructor": 11,
+      "maxSize": 10,
+      "room": "MCS 210"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.collectionVariables.set('s2_courseId', pm.response.json().id);
+    language: text/javascript
+order: 1000

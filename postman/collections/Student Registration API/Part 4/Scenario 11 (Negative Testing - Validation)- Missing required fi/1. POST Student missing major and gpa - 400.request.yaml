@@ -1,0 +1,17 @@
+$kind: http-request
+name: 1. POST Student missing major and gpa -> 400
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Incomplete Student"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('Missing required fields returns 400', () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 1000

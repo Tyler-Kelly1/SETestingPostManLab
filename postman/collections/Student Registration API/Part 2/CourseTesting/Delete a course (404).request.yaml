@@ -1,0 +1,65 @@
+$kind: http-request
+description: Deletes the course. The students on its roster are not deleted.
+url: "{{baseUrl}}/api/courses/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: "-1"
+    description: Id of the course.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: text
+  content: ""
+scripts:
+  - type: afterResponse
+    code: "const Ajv = require('ajv');\r
+
+      const spec = JSON.parse(pm.collectionVariables.get('contract'));\r
+
+      const ajv = new Ajv({\r
+
+      allErrors: true,\r
+
+      unknownFormats: 'ignore',\r
+
+      schemaId: 'auto',\r
+
+      validateSchema: false,\r
+
+      logger: false\r
+
+      });\r
+
+      ajv.addSchema(spec, 'spec');\r
+
+      pm.test('Body matches ErrorResponse', () => {\r
+
+      const valid = ajv.validate(\r
+
+      { $ref: 'spec#/components/schemas/ErrorResponse' },\r
+
+      pm.response.json()\r
+
+      );\r
+
+      pm.expect(valid, ajv.errorsText()).to.be.true;\r
+
+      });"
+    language: text/javascript
+settings: {}
+examples: .resources/Delete a course (404).resources/examples
+order: 11000

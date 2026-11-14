@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 14 (Data Variation - Query Filtering): Filtering GET /api/students by major"
+order: 14000

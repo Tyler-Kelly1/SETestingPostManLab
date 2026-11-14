@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses/{{s1_courseId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      const studentId = Number(pm.collectionVariables.get('s1_studentId'));
+      pm.test('Course roster no longer lists deleted student', () => {
+        const rosterIds = pm.response.json().roster.map(s => s.id);
+        pm.expect(rosterIds).to.not.include(studentId);
+      });
+    language: text/javascript
+order: 5000

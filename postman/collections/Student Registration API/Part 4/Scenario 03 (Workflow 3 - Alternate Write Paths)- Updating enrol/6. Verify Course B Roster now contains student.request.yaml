@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses/{{s3_courseB}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      const studentId = Number(pm.collectionVariables.get('s3_studentId'));
+      pm.test('Course B has student on roster', () => {
+        pm.expect(pm.response.json().roster.map(s => s.id)).to.include(studentId);
+      });
+    language: text/javascript
+order: 6000

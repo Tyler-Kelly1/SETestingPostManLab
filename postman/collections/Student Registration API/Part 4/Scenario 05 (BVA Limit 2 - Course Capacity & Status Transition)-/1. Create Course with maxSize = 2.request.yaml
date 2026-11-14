@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Cap-2-Course",
+      "maxSize": 2,
+      "room": "Rm 1"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.collectionVariables.set('s5_courseId', pm.response.json().id);
+      pm.test('New course is OPEN', () => pm.expect(pm.response.json().status).to.eql('OPEN'));
+    language: text/javascript
+order: 1000

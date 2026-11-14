@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 05 (BVA Limit 2 - Course Capacity & Status Transition): Enrolling up to and beyond maxSize"
+order: 5000

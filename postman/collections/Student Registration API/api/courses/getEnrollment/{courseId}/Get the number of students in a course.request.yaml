@@ -1,0 +1,30 @@
+$kind: http-request
+description: Returns the number of students currently on the roster.
+url: "{{baseUrl}}/api/courses/getEnrollment/:courseId"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: courseId
+    value: "1"
+    disabled: false
+    description: Id of the course.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: text
+  content: ""
+settings: {}
+examples: ./.resources/Get the number of students in a course.resources/examples
+order: 1000

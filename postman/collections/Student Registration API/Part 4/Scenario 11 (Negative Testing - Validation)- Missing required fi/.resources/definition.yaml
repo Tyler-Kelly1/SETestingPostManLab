@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 11 (Negative Testing - Validation): Missing required fields on Student creation returns 400"
+order: 11000

@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/api/students/{{s2_studentId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Student courses list includes CS202-Consistency', () => {
+        pm.expect(pm.response.json().courses).to.include('CS202-Consistency');
+      });
+    language: text/javascript
+order: 4000

@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/courses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Preserve-Roster-Course",
+      "maxSize": 10,
+      "room": "Rm 100",
+      "roster": [{{s13_studentId}}]
+    }
+scripts:
+  - type: afterResponse
+    code: pm.collectionVariables.set('s13_courseId', pm.response.json().id);
+    language: text/javascript
+order: 2000

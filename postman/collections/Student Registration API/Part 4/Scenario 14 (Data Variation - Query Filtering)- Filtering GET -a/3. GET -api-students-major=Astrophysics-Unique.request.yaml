@@ -1,0 +1,16 @@
+$kind: http-request
+name: 3. GET /api/students?major=Astrophysics-Unique
+url: "{{baseUrl}}/api/students?major=Astrophysics-Unique"
+method: GET
+queryParams:
+  major: Astrophysics-Unique
+scripts:
+  - type: afterResponse
+    code: |-
+      const list = pm.response.json();
+      pm.test('Returns non-empty list where every student has matching major', () => {
+        pm.expect(list.length).to.be.greaterThan(0);
+        list.forEach(s => pm.expect(s.major).to.eql('Astrophysics-Unique'));
+      });
+    language: text/javascript
+order: 3000

@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Protected DOB Student",
+      "major": "Cybersecurity",
+      "gpa": 3.8,
+      "dateOfBirth": "2004-01-06"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Created (201) and dateOfBirth is not in POST response', () => {
+        pm.response.to.have.status(201);
+        pm.expect(pm.response.json()).to.not.have.property('dateOfBirth');
+      });
+      pm.collectionVariables.set('s12_studentId', pm.response.json().id);
+    language: text/javascript
+order: 1000

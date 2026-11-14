@@ -1,0 +1,62 @@
+$kind: http-request
+description: Returns every course, optionally limited to a single instructor.
+url: "{{baseUrl}}/api/courses"
+method: GET
+headers:
+  Accept: application/json
+body:
+  type: text
+  content: ""
+scripts:
+  - type: afterResponse
+    code: "const Ajv = require('ajv');\r
+
+      const spec = JSON.parse(pm.collectionVariables.get('contract'));\r
+
+      const ajv = new Ajv({ allErrors: true, unknownFormats: 'ignore', schemaId: 'auto', validateSchema: false, logger: false });\r
+
+      ajv.addSchema(spec, 'spec');\r
+
+      \r
+
+      pm.test('Body matches Array of CourseResponse', () => {\r
+
+      \    // Define an inline schema for an array of StudentResponse\r
+
+      \    const valid = ajv.validate(\r
+
+      \        { type: \"array\", items: { $ref: 'spec#/components/schemas/CourseResponse' } },\r
+
+      \        pm.response.json()\r
+
+      \    );\r
+
+      \    pm.expect(valid, ajv.errorsText()).to.be.true;\r
+
+      });\r
+
+      \r
+
+      pm.test('No undocumented fields in any array item', () => {\r
+
+      \    const documented = spec.components.schemas.CourseResponse.properties;\r
+
+      \    const items = pm.response.json();\r
+
+      \    \r
+
+      \    // Check every item in the array\r
+
+      \    items.forEach((item, index) => {\r
+
+      \        const extras = Object.keys(item).filter(k => !(k in documented));\r
+
+      \        pm.expect(extras, `Undocumented in item ${index}: ` + extras.join(', ')).to.be.empty;\r
+
+      \    });\r
+
+      });"
+    language: text/javascript
+settings: {}
+examples: .resources/List courses (200).resources/examples
+order: 4000

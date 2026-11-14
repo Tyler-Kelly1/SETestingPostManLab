@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 08 (State Transition - Duplicate Enrollment): Enrolling an already enrolled student returns 409"
+order: 8000

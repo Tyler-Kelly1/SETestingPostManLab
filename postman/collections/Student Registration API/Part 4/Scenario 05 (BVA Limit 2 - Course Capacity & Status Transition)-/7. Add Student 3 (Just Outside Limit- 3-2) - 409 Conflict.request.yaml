@@ -1,0 +1,14 @@
+$kind: http-request
+name: "7. Add Student 3 (Just Outside Limit: 3/2) -> 409 Conflict"
+url: "{{baseUrl}}/api/courses/addStudent/{{s5_courseId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{{s5_stu3}}"
+scripts:
+  - type: afterResponse
+    code: pm.test('Adding student past maxSize returns 409', () => pm.response.to.have.status(409));
+    language: text/javascript
+order: 7000

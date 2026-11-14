@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 07 (BVA on Course Update): Reducing maxSize below current roster size"
+order: 7000

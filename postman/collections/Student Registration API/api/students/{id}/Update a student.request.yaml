@@ -1,0 +1,127 @@
+$kind: http-request
+description: Replaces the student's details and, when `courses` is supplied,
+  their course enrollments.
+url: "{{baseUrl}}/api/students/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: "1"
+    disabled: false
+    description: Id of the student.
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: json
+  content: |-
+    {
+      "gpa": 4.00,
+      "major": "Computer Science",
+      "name": "Sherlock Holmes",
+      "courses": [
+        1,
+        1
+      ],
+      "dateOfBirth": "2004-01-06"
+    }
+  $type: |-
+    {
+      "description": "The fields a client supplies to create or update a student.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "example": "Sherlock Holmes",
+          "description": "Full name of the student."
+        },
+        "major": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "example": "Computer Science",
+          "description": "Declared major."
+        },
+        "gpa": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4,
+          "example": 3.75,
+          "description": "Grade point average on a 4.0 scale.",
+          "format": "double"
+        },
+        "courses": {
+          "type": "array",
+          "description": "Ids of the courses to enroll this student in. The student is added to the roster of each course. On an update, the list replaces the student's current courses.",
+          "items": {
+            "type": "integer",
+            "example": 1,
+            "format": "int64"
+          }
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "example": "2004-01-06",
+          "description": "Date of birth. Protected student data: it is accepted on write and is never returned by the API.",
+          "format": "date"
+        }
+      },
+      "required": [
+        "gpa",
+        "major",
+        "name"
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: "const Ajv = require('ajv');\r
+
+      const spec = JSON.parse(pm.collectionVariables.get('contract'));\r
+
+      const ajv = new Ajv({\r
+
+      allErrors: true,\r
+
+      unknownFormats: 'ignore',\r
+
+      schemaId: 'auto',\r
+
+      validateSchema: false,\r
+
+      logger: false\r
+
+      });\r
+
+      ajv.addSchema(spec, 'spec');\r
+
+      pm.test('Body matches StudentResponse', () => {\r
+
+      const valid = ajv.validate(\r
+
+      { $ref: 'spec#/components/schemas/StudentResponse' },\r
+
+      pm.response.json()\r
+
+      );\r
+
+      pm.expect(valid, ajv.errorsText()).to.be.true;\r
+
+      });"
+    language: text/javascript
+settings: {}
+examples: .resources/Update a student.resources/examples
+order: 2000

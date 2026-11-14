@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/api/students/{{s12_studentId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('dateOfBirth is not exposed on GET /api/students/{id}', () => {
+        pm.expect(pm.response.json()).to.not.have.property('dateOfBirth');
+      });
+    language: text/javascript
+order: 2000

@@ -1,0 +1,14 @@
+$kind: http-request
+name: 4. Second addStudent -> 409 Conflict
+url: "{{baseUrl}}/api/courses/addStudent/{{s8_courseId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{{s8_studentId}}"
+scripts:
+  - type: afterResponse
+    code: pm.test('Duplicate enrollment rejected (409)', () => pm.response.to.have.status(409));
+    language: text/javascript
+order: 4000

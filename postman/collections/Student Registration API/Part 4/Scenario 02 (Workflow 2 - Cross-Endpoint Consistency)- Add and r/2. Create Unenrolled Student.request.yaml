@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Ada Lovelace",
+      "major": "Mathematics",
+      "gpa": 4.0
+    }
+scripts:
+  - type: afterResponse
+    code: pm.collectionVariables.set('s2_studentId', pm.response.json().id);
+    language: text/javascript
+order: 2000

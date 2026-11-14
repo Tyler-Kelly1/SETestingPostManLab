@@ -1,0 +1,73 @@
+$kind: http-request
+name: Create a course
+description: Creates a course, optionally with an initial roster.
+url: "{{baseUrl}}/api/courses"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "maxSize": 30,
+      "name": "CS1",
+      "room": "MCS 339",
+      "instructor": 2,
+      "roster": [
+        1,
+        1
+      ]
+    }
+  $type: |-
+    {
+      "description": "The fields a client supplies to create or update a course.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "example": "CS1",
+          "description": "Name of the course."
+        },
+        "instructor": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 2,
+          "description": "Id of the instructor teaching the course.",
+          "format": "int64"
+        },
+        "maxSize": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 30,
+          "description": "Maximum number of students the course can hold. It cannot be set below the number of students already on the roster.",
+          "format": "int32"
+        },
+        "room": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "example": "MCS 339",
+          "description": "Room where the course meets."
+        },
+        "roster": {
+          "type": "array",
+          "description": "Ids of the students to place on the roster. When omitted from an update, the roster is left unchanged. Every id must belong to an existing student.",
+          "items": {
+            "type": "integer",
+            "example": 1,
+            "format": "int64"
+          }
+        }
+      },
+      "required": [
+        "maxSize",
+        "name",
+        "room"
+      ]
+    }
+settings: {}
+examples: ./.resources/Create a course-1.resources/examples
+order: 6000

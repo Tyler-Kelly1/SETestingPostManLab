@@ -1,0 +1,19 @@
+$kind: http-request
+name: 2. Name length = 1 (On minLength 1) -> 201
+url: "{{baseUrl}}/api/students"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "A",
+      "major": "CS",
+      "gpa": 3.0
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('1-char name accepted (201)', () => pm.response.to.have.status(201));
+    language: text/javascript
+order: 2000

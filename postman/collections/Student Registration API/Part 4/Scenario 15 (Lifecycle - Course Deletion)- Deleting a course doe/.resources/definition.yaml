@@ -1,0 +1,3 @@
+$kind: collection
+name: "Scenario 15 (Lifecycle - Course Deletion): Deleting a course does not delete enrolled students"
+order: 15000

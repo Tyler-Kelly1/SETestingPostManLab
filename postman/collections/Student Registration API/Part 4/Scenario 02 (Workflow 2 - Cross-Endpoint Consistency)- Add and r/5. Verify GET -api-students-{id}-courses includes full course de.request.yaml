@@ -1,0 +1,13 @@
+$kind: http-request
+name: 5. Verify GET /api/students/{id}/courses includes full course details
+url: "{{baseUrl}}/api/students/{{s2_studentId}}/courses"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      const courseId = Number(pm.collectionVariables.get('s2_courseId'));
+      pm.test('Student courses endpoint returns course object', () => {
+        pm.expect(pm.response.json().map(c => c.id)).to.include(courseId);
+      });
+    language: text/javascript
+order: 5000
