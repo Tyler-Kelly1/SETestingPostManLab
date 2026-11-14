@@ -3,7 +3,7 @@
 The system under test for the API contract and dynamic testing lab.
 It is a Spring Boot REST API that manages students, courses, and course rosters.
 
-For Part 2 Review I would recommend opening the .postman file in post man to see all single request clearly. There are also test design docs/tables in excel files at the top level of this repo.
+For Part 2 Review I would recommend opening the postman file in post man to see all single request clearly. There are also test design docs/tables in excel files at the top level of this repo.
 
 ## What you need
 
